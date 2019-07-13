@@ -6,6 +6,44 @@ from pyspark.ml.feature import VectorIndexer, ChiSqSelector
 from pyspark.ml.classification import DecisionTreeClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 
+
+# VARIABLES
+
+EDAD = 0
+GENERO = 2
+ETNIA = 3
+ZONA = 4
+ESCOLARIDAD = 7
+FUMADOR = 10
+DIABETES = 11
+HAS = 12
+HTADM = 13
+GLICEMIA = 14
+ENF_CORONARIA = 16
+T_SISTOLICA = 17
+T_DIASTOLICA = 18
+COLESTEROL_TOTAL = 20
+TRIGLICERIDOS = 22
+RCV_GLOBAL = 25
+GLICEMIA_AYUNO = 29
+PERIMETRO_ABDOMINAL = 31
+PESO = 33
+TALLA = 34
+IMC = 35
+CREATININA = 37
+MICROALBUMINURIA = 39
+FARMACOS_ANTIHIPERTENSIVOS = 43
+ANTIDIABETICOS = 46
+
+
+
+
+
+
+
+
+
+
 # Convertir a entero jugadores ofensivos y jugadores defensivos
 def tipo_posiciones(p):
     # Ofensivo
