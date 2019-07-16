@@ -35,16 +35,101 @@ MICROALBUMINURIA = 39
 ESTADO_IRC = 42
 FARMACOS_ANTIHIPERTENSIVOS = 44
 
-# Convertir a entero jugadores ofensivos y jugadores defensivos
-def tipo_posiciones(p):
-    # Ofensivo
-    if p == 'RF' or p == 'ST' or p == 'LF' or p == 'RS' or p == 'LS' or p == 'CF' or p == 'LW' or p == 'RCM' or p == 'LCM' or p == 'LDM' or p == 'CAM' or p == 'CDM' or p == 'RM' or p == 'LAM' or p == 'LM' or p == 'RDM' or p == 'RW' or p == 'CM' or p == 'RAM':
+# Convertir etnias
+def etnia(p):
+    if p == 'Afrocolombiano':
         return 1 
-    # Defensivo
-    elif p == 'RCB' or p == 'CB' or p == 'LCB' or p == 'LB' or p == 'RB' or p == 'RWB' or p == 'LWB' or p == 'GK':
-        return 0
+    elif p == 'Blanco':
+        return 2
+    elif p == 'Indigena':
+        return 3
+    elif p == 'Mestizo':
+        return 4
     else:
-        return 1
+        return 5
+
+# Convertir zonas
+def zona(p):
+    if p == 'Rural':
+        return 1 
+    elif p == 'Urbana':
+        return 2
+    else:
+        return 3
+
+
+# Convertir fumador
+def fumador(p):
+    if p == 'Si':
+        return 1 
+    elif p == 'No':
+        return 2
+    else:
+        return 3
+
+# Convertir diabetes
+def diabetes(p):
+    if p == 'Si':
+        return 1 
+    elif p == 'No':
+        return 2
+    else:
+        return 3
+
+# Convertir HAS
+def has(p):
+    if p == 'Si':
+        return 1 
+    elif p == 'No':
+        return 2
+    else:
+        return 3
+
+# Convertir HTADM
+def htadm(p):
+    if p == 'Si':
+        return 1 
+    elif p == 'No':
+        return 2
+    else:
+        return 3
+
+# Convertir enfermedad coronaria
+def enf_coronaria(p):
+    if p == 'Si':
+        return 1 
+    elif p == 'No':
+        return 2
+    else:
+        return 3
+
+# Convertir RCV GLobal
+def rcv(p):
+    if p == 'ALTO':
+        return 1 
+    elif p == 'INTERMEDIO':
+        return 2
+    elif p == 'LATENTE':
+        return 3
+    elif p == 'MUY ALTO':
+        return 4
+    else:
+        return 5
+
+# Convertir Estado IRC
+def irc(p):
+    if p == 'ERC LEVE':
+        return 1 
+    elif p == 'ERC MODERADA':
+        return 2
+    elif p == 'ERC SEVERA':
+        return 3
+    elif p == 'NORMAL':
+        return 4
+    elif p == 'RIÑON TERMINAL':
+        return 5
+    else:
+        return 6
 
 # Cargar el CSV
 def leer_df():
@@ -67,11 +152,11 @@ def leer_df():
 
 	# Consideramos los principales features
 	rdd = rdd.map(
-		lambda x: ( int(x[EDAD]), int(x[GENERO]), str(x[ETNIA]),str(x[ZONA]), int(x[ESCOLARIDAD]), 
-					str(x[FUMADOR]) , str(x[DIABETES]), str(x[HAS]), str(x[HTADM]), int(x[GLICEMIA]),
-					str(x[ENF_CORONARIA]), int(x[T_SISTOLICA]), int(x[T_DIASTOLICA]) , int(x[COLESTEROL_TOTAL]), float(x[TRIGLICERIDOS]),
-				    str(x[RCV_GLOBAL]), int(x[GLICEMIA_AYUNO]), int(x[PERIMETRO_ABDOMINAL]), int(x[PESO]), int(x[TALLA]),
-				    int(x[IMC]), int(x[CREATININA]), float(x[MICROALBUMINURIA]), str(x[ESTADO_IRC]), int(x[FARMACOS_ANTIHIPERTENSIVOS]) ))
+		lambda x: ( int(x[EDAD]), int(x[GENERO]), int(etnia(x[ETNIA])), int(zona(x[ZONA])), int(x[ESCOLARIDAD]), 
+					int(fumador(x[FUMADOR])) , int(diabetes(x[DIABETES])), int(has(x[HAS])), int(htadm(x[HTADM])), int(x[GLICEMIA]),
+					int(enf_coronaria(x[ENF_CORONARIA])), int(x[T_SISTOLICA]), int(x[T_DIASTOLICA]) , int(x[COLESTEROL_TOTAL]), float(x[TRIGLICERIDOS]),
+				    int(rcv(x[RCV_GLOBAL])), int(x[GLICEMIA_AYUNO]), int(x[PERIMETRO_ABDOMINAL]), int(x[PESO]), int(x[TALLA]),
+				    int(x[IMC]), int(x[CREATININA]), float(x[MICROALBUMINURIA]), int(irc(x[ESTADO_IRC])), int(x[FARMACOS_ANTIHIPERTENSIVOS]) ))
 	df = rdd.toDF(["EDAD","GENERO","ETNIA","ZONA","ESCOLARIDAD",
 	 			   "FUMADOR", "DIABETES","HAS","HTADM","GLICEMIA",
 				   "ENF_CORONARIA","T_SISTOLICA","T_DIASTOLICA","COLESTEROL_TOTAL","TRIGLICERIDOS",
@@ -125,7 +210,7 @@ def feature_selection(df):
 
 	# Prueba ChiSquare
 	selector = ChiSqSelector(
-		numTopFeatures=10,
+		numTopFeatures=8,
 		featuresCol="indexedFeatures",
 		labelCol="DIABETES",
 		outputCol="selectedFeatures")
