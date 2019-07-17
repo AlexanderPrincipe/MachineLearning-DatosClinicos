@@ -139,7 +139,7 @@ def leer_df():
 	sqlContext = SQLContext(sc)
 	
 	# Creacion de rdd
-	rdd = sqlContext.read.csv("BDClinica.csv", header=True).rdd
+	rdd = sqlContext.read.csv("BD.csv", header=True).rdd
 
 	# Filtrando datos vacios
 	rdd = rdd.filter(
@@ -174,7 +174,7 @@ def leer_df_categoricos():
 	sqlContext = SQLContext(sc)
 	
 	# Creacion de rdd
-	rdd = sqlContext.read.csv("BDClinica.csv", header=True).rdd
+	rdd = sqlContext.read.csv("BD.csv", header=True).rdd
 	
 	# Filtramos los datos vacios
 	rdd = rdd.filter(
@@ -183,9 +183,9 @@ def leer_df_categoricos():
 
 	# Features mas representativos
 	rdd = rdd.map(
-        lambda x: (tipo_posiciones((x[21])) ,int(x[55].split('+')[0]), int(x[57].split('+')[0]), int(x[63].split('+')[0]),
-		int(x[71].split('+')[0]),int(x[82].split('+')[0]), int(x[87].split('+')[0]),int(x[54].split('+')[0]),int(x[66].split('+')[0]),int(x[59].split('+')[0]), int(x[65].split('+')[0])  ))
-	df = rdd.toDF(["Position", "Finishing", "ShortPassing", "BallControl", "Stamina", "SlidingTackle", "GKReflexes", "Crossing", "Agility", "Dribbling", "SprintSpeed"])
+        lambda x: ( int(x[EDAD]), int(x[GENERO]), int(etnia(x[ETNIA])), int(x[GLICEMIA]), int(x[PERIMETRO_ABDOMINAL]), 
+		            int(rcv(x[RCV_GLOBAL])), int(x[IMC]), int(diabetes(x[DIABETES])) ))
+	df = rdd.toDF(["EDAD", "GENERO", "ETNIA", "GLICEMIA", "PERIMETRO_ABDOMINAL", "RCV_GLOBAL", "IMC", "DIABETES"])
 
 	return df
 
@@ -219,9 +219,9 @@ def feature_selection(df):
 
 def entrenamiento(df):
 	# Vectorizo
-	df = df.select("Finishing", "ShortPassing", "BallControl", "Stamina", "SlidingTackle", "GKReflexes", "Crossing", "Agility", "Position", "Dribbling", "SprintSpeed")
+	df = df.select("EDAD", "GENERO", "ETNIA", "GLICEMIA", "PERIMETRO_ABDOMINAL", "RCV_GLOBAL", "IMC", "DIABETES")
 	assembler = VectorAssembler(
-		inputCols=["Finishing", "ShortPassing", "BallControl", "Stamina", "SlidingTackle", "GKReflexes", "Crossing", "Agility", "Dribbling", "SprintSpeed"],
+		inputCols=["EDAD", "GENERO", "ETNIA", "GLICEMIA", "PERIMETRO_ABDOMINAL", "RCV_GLOBAL", "IMC"],
 		outputCol="features")
 	df = assembler.transform(df)
 
@@ -230,7 +230,7 @@ def entrenamiento(df):
 
 	# Entrenamiento
 	entrenador = DecisionTreeClassifier(
-		labelCol="Position", 
+		labelCol="DIABETES", 
 		featuresCol="features")
 
 	# Creacion de pipeline
@@ -243,7 +243,7 @@ def entrenamiento(df):
 
 	# Evaluador --> Accuracy
 	evaluator = MulticlassClassificationEvaluator(
-		labelCol="Position",
+		labelCol="DIABETES",
 		predictionCol="prediction",
 		metricName="accuracy")
 
