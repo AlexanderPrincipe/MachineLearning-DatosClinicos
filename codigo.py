@@ -16,7 +16,7 @@ ZONA = 4
 ESCOLARIDAD = 7
 FUMADOR = 10
 DIABETES = 11
-HAS = 12 # hipertencion arterial sistemica
+HAS = 12
 HTADM = 13
 GLICEMIA = 14
 ENF_CORONARIA = 16
@@ -175,12 +175,13 @@ def leer_df_categoricos():
 	
 	# Creacion de rdd
 	rdd = sqlContext.read.csv("BD.csv", header=True).rdd
-	
-	# Filtramos los datos vacios
-	rdd = rdd.filter(
-		lambda x: (		   x[21] != None and x[21] != '' and x[55] != None and x[57] != None and x[63] != None and \
-						   x[71] != None and x[82] != None and x[87] != None and x[54] != None and x[66] != None and x[59] != None and x[65] != None  ))
 
+	# Filtrando datos vacios
+	rdd = rdd.filter(
+		lambda x: (		   x[DIABETES] != None and x[DIABETES] != '' and x[EDAD] != None and x[GENERO] != None and x[ETNIA] != None and \
+						   x[GLICEMIA] != None and x[RCV_GLOBAL] != None and x[PERIMETRO_ABDOMINAL] != None and \
+						   x[IMC] != None))
+	
 	# Features mas representativos
 	rdd = rdd.map(
         lambda x: ( int(x[EDAD]), int(x[GENERO]), int(etnia(x[ETNIA])), int(x[GLICEMIA]), int(x[PERIMETRO_ABDOMINAL]), 
@@ -225,8 +226,8 @@ def entrenamiento(df):
 		outputCol="features")
 	df = assembler.transform(df)
 
-	# Dividir nuestro dataset
-	(training_df, test_df) = df.randomSplit([0.7, 0.3])
+	# Dividir dataset
+	(training_df, test_df, validation_df) = df.randomSplit([0.7, 0.2, 0.1])
 
 	# Entrenamiento
 	entrenador = DecisionTreeClassifier(
@@ -240,6 +241,7 @@ def entrenamiento(df):
 
 	# Prediccion
 	predictions_df = model.transform(test_df)
+	predictions_df = model.transform(validation_df)
 
 	# Evaluador --> Accuracy
 	evaluator = MulticlassClassificationEvaluator(
@@ -251,11 +253,31 @@ def entrenamiento(df):
 	exactitud = evaluator.evaluate(predictions_df)
 	print("Exactitud: {}".format(exactitud))
 
+# Validar el modelo
+def validar(model, training_df):
+	# Validar metrica rmse
+	predictions_df = model.transform(training_df)
+	evaluador = RegressionEvaluator(
+		labelCol="DIABETES", 
+		predictionCol="prediction",
+		metricName="rmse")
+	metrica = evaluador.evaluate(predictions_df)
+	print("RMSE: {}".format(metrica))
+
+	# Validar metrica rmse
+	evaluador = RegressionEvaluator(
+		labelCol="DIABETES", 
+		predictionCol="prediction",
+		metricName="r2")
+	metrica = evaluador.evaluate(predictions_df)
+	print("R2: {}".format(metrica))
+
 def main():
-	df = leer_df()
-	#df = leer_df_categoricos()
-	feature_selection(df)
-	#entrenamiento(df)
+	#df = leer_df()
+	df = leer_df_categoricos()
+	#feature_selection(df)
+	entrenamiento(df)
+	#validar(validation_df, training_df)
 	
 if __name__ == "__main__":
 	main()
